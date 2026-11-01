@@ -412,3 +412,26 @@ def test_get_llm_and_embedder_config_read_runcrate_env_key(tmp_path, monkeypatch
     assert emb_cfg.api_key == "rc-from-env"
     assert emb_cfg.base_url == "https://api.runcrate.ai/v1"
 
+
+
+def test_get_llm_config_reads_cerebras_env_key(tmp_path, monkeypatch):
+    """Empty toml api_key must resolve CEREBRAS_API_KEY, ahead of OPENAI_API_KEY."""
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-must-not-win")
+    monkeypatch.setenv("CEREBRAS_API_KEY", "csk-from-env")
+
+    cm = ConfigManager(tmp_path / "config.toml")
+    cm.set_llm(provider="cerebras", model="qwen-3.8-27b", api_key="")
+    cfg = cm.get_llm_config()
+
+    assert cfg.api_key == "csk-from-env"
+    assert cfg.base_url == "https://api.cerebras.ai/v1"
+
+
+def test_interactive_init_lists_cerebras():
+    """he config init provider list includes Cerebras."""
+    import inspect
+
+    from hyperextract.cli.commands.config import init
+
+    assert '"cerebras"' in inspect.getsource(init)

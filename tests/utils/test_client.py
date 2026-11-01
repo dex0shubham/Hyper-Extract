@@ -178,6 +178,26 @@ class TestCreateLLM:
         llm = create_llm("runcrate")
         assert llm.openai_api_key.get_secret_value() == "rc-from-env"
 
+    def test_create_llm_cerebras(self):
+        """Create LLM with cerebras preset (OpenAI-compatible endpoint)."""
+        llm = create_llm("cerebras", api_key="csk-test")
+        assert llm.model_name == "qwen-3.8-27b"
+        assert llm.openai_api_base == "https://api.cerebras.ai/v1"
+
+    def test_create_llm_cerebras_model_override(self):
+        """A bare Cerebras model id after the colon replaces the preset default."""
+        llm = create_llm("cerebras:gpt-oss-120b", api_key="csk-test")
+        assert llm.model_name == "gpt-oss-120b"
+        assert llm.openai_api_base == "https://api.cerebras.ai/v1"
+
+    def test_create_llm_cerebras_env_key(self, monkeypatch):
+        """Cerebras key is read from CEREBRAS_API_KEY, ahead of OPENAI_API_KEY."""
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-test")
+        monkeypatch.setenv("CEREBRAS_API_KEY", "csk-from-env")
+        llm = create_llm("cerebras")
+        assert llm.openai_api_key.get_secret_value() == "csk-from-env"
+
+
     def test_create_llm_orcarouter(self):
         """Create LLM with orcarouter preset (OpenAI-compatible gateway)."""
         llm = create_llm("orcarouter", api_key="sk-test")
@@ -670,6 +690,15 @@ class TestProviderPresets:
         assert preset["base_url"] == "https://api.runcrate.ai/v1"
         assert preset["default_llm"] == "deepseek-ai/DeepSeek-V4.1-Flash"
         assert preset["default_embedder"] == "BAAI/bge-m3"
+
+    def test_cerebras_provider(self):
+        """Cerebras has its own preset and no embedder (no embeddings API)."""
+        assert "cerebras" in PROVIDER_PRESETS
+        preset = PROVIDER_PRESETS["cerebras"]
+        assert preset["base_url"] == "https://api.cerebras.ai/v1"
+        assert preset["default_llm"] == "qwen-3.8-27b"
+        assert preset["default_embedder"] is None
+
 
     def test_orcarouter_provider(self):
         """OrcaRouter has its own preset (OpenAI-compatible, named models)."""
