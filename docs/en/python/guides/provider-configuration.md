@@ -1,6 +1,6 @@
 # Provider Configuration Guide
 
-Configure Hyper-Extract to work with OpenAI, Bailian (Alibaba Cloud), DeepSeek, OrcaRouter, Atlas Cloud, Runcrate, Cheaper Inference, or local vLLM deployments.
+Configure Hyper-Extract to work with OpenAI, Bailian (Alibaba Cloud), DeepSeek, OrcaRouter, Atlas Cloud, Runcrate, Cerebras, Cheaper Inference, or local vLLM deployments.
 
 ---
 
@@ -120,6 +120,22 @@ he config llm -p api-route -m gpt-6.1-sol
 he config embedder -p openai -m text-embedding-3-small
 ```
 
+### Cerebras
+
+```python
+from hyperextract import create_client
+
+# Cerebras exposes an OpenAI-compatible inference endpoint with bare model ids.
+# It has no embeddings API, so pair it with an OpenAI-compatible embedder.
+# Key: CEREBRAS_API_KEY.
+llm, emb = create_client(
+    llm="cerebras",  # default model: qwen-3.8-27b
+    embedder="openai:text-embedding-3-small",
+)
+# Or override the model: create_client(llm="cerebras:gpt-oss-120b", ...)
+# Some ids are dedicated-inference only; check your plan before pinning one.
+```
+
 ### Cheaper Inference
 
 ```python
@@ -177,6 +193,7 @@ print(f"Nodes: {len(graph.nodes)}, Edges: {len(graph.edges)}")
 | **Cheaper Inference** | `he config llm -p cheaperinference -m gpt-5.4-mini -k ci_live_xxx` + `he config embedder -p openai -k sk-xxx` |
 | **Atlas Cloud** | `he config llm -p atlascloud -k xxx` + `he config embedder -p openai -k sk-xxx` |
 | **Runcrate** | `he config init -p runcrate -k rc_live_xxx` |
+| **Cerebras** | `he config llm -p cerebras -k csk-xxx` + `he config embedder -p openai -k sk-xxx` |
 | **vLLM** | `he config init` → select "local vLLM" |
 | **Mixed** (LLM=Bailian, Embedder=vLLM) | `he config llm -p bailian -k sk-xxx` + `he config embedder -p vllm -u http://localhost:8001/v1 -k dummy` |
 

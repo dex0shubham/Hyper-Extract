@@ -76,6 +76,18 @@ PROVIDER_PRESETS: dict[str, dict[str, str | None]] = {
         "default_llm": "gpt-6.1-sol",
         "default_embedder": None,
     },
+    # Cerebras. OpenAI-compatible inference endpoint. `tool_choice` accepts
+    # none/auto/required or a named function on every served model, which is what
+    # method="function_calling" relies on. "qwen-3.8-27b" is the id used in
+    # Cerebras's own examples and one of the shared-inference models; others such
+    # as kimi-k2.7-code are dedicated-inference only (inference-docs.cerebras.ai,
+    # 2026-11-01). Cerebras has no embeddings API — pair it with an
+    # OpenAI-compatible embedder.
+    "cerebras": {
+        "base_url": "https://api.cerebras.ai/v1",
+        "default_llm": "qwen-3.8-27b",
+        "default_embedder": None,
+    },
     # Atlas Cloud. OpenAI-compatible aggregator serving DeepSeek, Z.ai, Moonshot,
     # Qwen, MiniMax, OpenAI, Anthropic and Google models under vendor-prefixed
     # ids such as "deepseek-ai/deepseek-v4-flash". Forced tool_choice (which
@@ -147,6 +159,7 @@ PROVIDER_API_KEY_ENV: dict[str, tuple[str, ...]] = {
     "orcarouter": ("ORCAROUTER_API_KEY",),
     "cheaperinference": ("CHEAPER_INFERENCE_API_KEY",),
     "api-route": ("API_ROUTE_API_KEY",),
+    "cerebras": ("CEREBRAS_API_KEY",),
     "atlascloud": ("ATLASCLOUD_API_KEY",),
     "runcrate": ("RUNCRATE_API_KEY",),
 }
