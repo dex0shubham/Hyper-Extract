@@ -54,6 +54,16 @@ PROVIDER_PRESETS: dict[str, dict[str, str | None]] = {
         "default_llm": "deepseek-v4-flash",
         "default_embedder": None,
     },
+    # Moonshot AI (Kimi). OpenAI-compatible chat endpoint. `tool_choice` accepts
+    # a named function, which is what method="function_calling" relies on. Served
+    # models are the kimi-k3.1 / k3 / k2.7 families, bare ids with no vendor
+    # prefix (platform.kimi.ai, 2026-11-01). Moonshot has no embeddings API —
+    # pair it with an OpenAI-compatible embedder.
+    "moonshot": {
+        "base_url": "https://api.moonshot.ai/v1",
+        "default_llm": "kimi-k3.1-pro",
+        "default_embedder": None,
+    },
     # OrcaRouter. OpenAI-compatible model routing gateway exposing 150+ models
     # from OpenAI, Anthropic, Google, DeepSeek, Qwen, MiniMax, xAI and others
     # behind a single endpoint and API key. Namespaced model ids such as
@@ -144,6 +154,7 @@ PROVIDER_API_KEY_ENV: dict[str, tuple[str, ...]] = {
     "google": ("GOOGLE_API_KEY", "GEMINI_API_KEY"),
     "gemini": ("GOOGLE_API_KEY", "GEMINI_API_KEY"),
     "deepseek": ("DEEPSEEK_API_KEY",),
+    "moonshot": ("MOONSHOT_API_KEY",),
     "orcarouter": ("ORCAROUTER_API_KEY",),
     "cheaperinference": ("CHEAPER_INFERENCE_API_KEY",),
     "api-route": ("API_ROUTE_API_KEY",),
