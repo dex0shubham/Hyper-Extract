@@ -178,6 +178,26 @@ class TestCreateLLM:
         llm = create_llm("runcrate")
         assert llm.openai_api_key.get_secret_value() == "rc-from-env"
 
+    def test_create_llm_moonshot(self):
+        """Create LLM with moonshot preset (OpenAI-compatible chat endpoint)."""
+        llm = create_llm("moonshot", api_key="sk-moonshot-test")
+        assert llm.model_name == "kimi-k3.1-pro"
+        assert llm.openai_api_base == "https://api.moonshot.ai/v1"
+
+    def test_create_llm_moonshot_model_override(self):
+        """A bare Moonshot model id after the colon replaces the preset default."""
+        llm = create_llm("moonshot:kimi-k3", api_key="sk-moonshot-test")
+        assert llm.model_name == "kimi-k3"
+        assert llm.openai_api_base == "https://api.moonshot.ai/v1"
+
+    def test_create_llm_moonshot_env_key(self, monkeypatch):
+        """Moonshot key is read from MOONSHOT_API_KEY, ahead of OPENAI_API_KEY."""
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-test")
+        monkeypatch.setenv("MOONSHOT_API_KEY", "sk-moonshot-from-env")
+        llm = create_llm("moonshot")
+        assert llm.openai_api_key.get_secret_value() == "sk-moonshot-from-env"
+
+
     def test_create_llm_orcarouter(self):
         """Create LLM with orcarouter preset (OpenAI-compatible gateway)."""
         llm = create_llm("orcarouter", api_key="sk-test")
@@ -670,6 +690,15 @@ class TestProviderPresets:
         assert preset["base_url"] == "https://api.runcrate.ai/v1"
         assert preset["default_llm"] == "deepseek-ai/DeepSeek-V4.1-Flash"
         assert preset["default_embedder"] == "BAAI/bge-m3"
+
+    def test_moonshot_provider(self):
+        """Moonshot has its own preset and no embedder (no embeddings API)."""
+        assert "moonshot" in PROVIDER_PRESETS
+        preset = PROVIDER_PRESETS["moonshot"]
+        assert preset["base_url"] == "https://api.moonshot.ai/v1"
+        assert preset["default_llm"] == "kimi-k3.1-pro"
+        assert preset["default_embedder"] is None
+
 
     def test_orcarouter_provider(self):
         """OrcaRouter has its own preset (OpenAI-compatible, named models)."""
