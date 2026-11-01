@@ -178,6 +178,26 @@ class TestCreateLLM:
         llm = create_llm("runcrate")
         assert llm.openai_api_key.get_secret_value() == "rc-from-env"
 
+    def test_create_llm_mistral(self):
+        """Create LLM with mistral preset (OpenAI-shaped chat endpoint)."""
+        llm = create_llm("mistral", api_key="sk-mistral-test")
+        assert llm.model_name == "mistral-large-latest"
+        assert llm.openai_api_base == "https://api.mistral.ai/v1"
+
+    def test_create_llm_mistral_model_override(self):
+        """A dated Mistral model id after the colon replaces the rolling alias."""
+        llm = create_llm("mistral:mistral-small-2506", api_key="sk-mistral-test")
+        assert llm.model_name == "mistral-small-2506"
+        assert llm.openai_api_base == "https://api.mistral.ai/v1"
+
+    def test_create_llm_mistral_env_key(self, monkeypatch):
+        """Mistral key is read from MISTRAL_API_KEY, ahead of OPENAI_API_KEY."""
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-test")
+        monkeypatch.setenv("MISTRAL_API_KEY", "sk-mistral-from-env")
+        llm = create_llm("mistral")
+        assert llm.openai_api_key.get_secret_value() == "sk-mistral-from-env"
+
+
     def test_create_llm_orcarouter(self):
         """Create LLM with orcarouter preset (OpenAI-compatible gateway)."""
         llm = create_llm("orcarouter", api_key="sk-test")
@@ -278,6 +298,13 @@ class TestCreateEmbedder:
         )
         assert isinstance(emb, CompatibleEmbeddings)
         assert emb._model == "bge-m3"
+
+    def test_create_embedder_mistral(self):
+        """Mistral embedder uses CompatibleEmbeddings on the same endpoint."""
+        emb = create_embedder("mistral", api_key="sk-mistral-test")
+        assert isinstance(emb, CompatibleEmbeddings)
+        assert emb._model == "mistral-embed"
+
 
     def test_create_embedder_orcarouter(self):
         """OrcaRouter embedder uses CompatibleEmbeddings (custom base_url)."""
@@ -670,6 +697,15 @@ class TestProviderPresets:
         assert preset["base_url"] == "https://api.runcrate.ai/v1"
         assert preset["default_llm"] == "deepseek-ai/DeepSeek-V4.1-Flash"
         assert preset["default_embedder"] == "BAAI/bge-m3"
+
+    def test_mistral_provider(self):
+        """Mistral has its own preset with an embedder on the same endpoint."""
+        assert "mistral" in PROVIDER_PRESETS
+        preset = PROVIDER_PRESETS["mistral"]
+        assert preset["base_url"] == "https://api.mistral.ai/v1"
+        assert preset["default_llm"] == "mistral-large-latest"
+        assert preset["default_embedder"] == "mistral-embed"
+
 
     def test_orcarouter_provider(self):
         """OrcaRouter has its own preset (OpenAI-compatible, named models)."""
