@@ -39,6 +39,17 @@ PROVIDER_PRESETS: dict[str, dict[str, str | None]] = {
         "default_llm": "qwen3.6-plus",
         "default_embedder": "text-embedding-v4",
     },
+    # Mistral AI. OpenAI-shaped /v1/chat/completions and /v1/embeddings, so one
+    # key covers both the LLM and the embedder ("mistral-embed", 1024 dims).
+    # `tool_choice` accepts auto/none/any/required or a named function, which is
+    # what method="function_calling" relies on. "mistral-large-latest" is the
+    # rolling alias used in Mistral's own API examples (docs.mistral.ai,
+    # 2026-11-01); pin a dated id such as "mistral-small-2506" to avoid drift.
+    "mistral": {
+        "base_url": "https://api.mistral.ai/v1",
+        "default_llm": "mistral-large-latest",
+        "default_embedder": "mistral-embed",
+    },
     "vllm": {
         "base_url": None,
         "default_llm": None,
@@ -145,6 +156,7 @@ PROVIDER_API_KEY_ENV: dict[str, tuple[str, ...]] = {
     "gemini": ("GOOGLE_API_KEY", "GEMINI_API_KEY"),
     "deepseek": ("DEEPSEEK_API_KEY",),
     "orcarouter": ("ORCAROUTER_API_KEY",),
+    "mistral": ("MISTRAL_API_KEY",),
     "cheaperinference": ("CHEAPER_INFERENCE_API_KEY",),
     "api-route": ("API_ROUTE_API_KEY",),
     "atlascloud": ("ATLASCLOUD_API_KEY",),

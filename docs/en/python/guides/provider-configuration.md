@@ -1,6 +1,6 @@
 # Provider Configuration Guide
 
-Configure Hyper-Extract to work with OpenAI, Bailian (Alibaba Cloud), DeepSeek, OrcaRouter, Atlas Cloud, Runcrate, Cheaper Inference, or local vLLM deployments.
+Configure Hyper-Extract to work with OpenAI, Bailian (Alibaba Cloud), DeepSeek, OrcaRouter, Atlas Cloud, Runcrate, Mistral AI, Cheaper Inference, or local vLLM deployments.
 
 ---
 
@@ -120,6 +120,21 @@ he config llm -p api-route -m gpt-6.1-sol
 he config embedder -p openai -m text-embedding-3-small
 ```
 
+### Mistral AI
+
+```python
+from hyperextract import create_client
+
+# Mistral serves OpenAI-shaped /v1/chat/completions and /v1/embeddings, so one
+# key covers both halves. Key: MISTRAL_API_KEY.
+llm, emb = create_client(
+    llm="mistral",  # default model: mistral-large-latest
+    embedder="mistral",  # default embedder: mistral-embed (1024 dims)
+)
+# Or override the model: create_client(llm="mistral:mistral-small-latest", ...)
+# The *-latest ids are rolling aliases; pin a dated id to keep results stable.
+```
+
 ### Cheaper Inference
 
 ```python
@@ -177,6 +192,7 @@ print(f"Nodes: {len(graph.nodes)}, Edges: {len(graph.edges)}")
 | **Cheaper Inference** | `he config llm -p cheaperinference -m gpt-5.4-mini -k ci_live_xxx` + `he config embedder -p openai -k sk-xxx` |
 | **Atlas Cloud** | `he config llm -p atlascloud -k xxx` + `he config embedder -p openai -k sk-xxx` |
 | **Runcrate** | `he config init -p runcrate -k rc_live_xxx` |
+| **Mistral AI** | `he config init -p mistral -k your-mistral-key` |
 | **vLLM** | `he config init` → select "local vLLM" |
 | **Mixed** (LLM=Bailian, Embedder=vLLM) | `he config llm -p bailian -k sk-xxx` + `he config embedder -p vllm -u http://localhost:8001/v1 -k dummy` |
 
