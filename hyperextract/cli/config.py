@@ -11,7 +11,11 @@ from typing import Any
 
 import tomli_w
 
-from hyperextract.utils.client import PROVIDER_API_KEY_ENV, PROVIDER_PRESETS
+from hyperextract.utils.client import (
+    LOCAL_PROVIDERS,
+    PROVIDER_API_KEY_ENV,
+    PROVIDER_PRESETS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -319,19 +323,23 @@ class ConfigManager:
         llm_config = self.get_llm_config()
         embedder_config = self.get_embedder_config()
 
-        # vLLM mode: api_key can be empty or dummy, but base_url is required
-        if llm_config.provider == "vllm":
+        # Local runtimes ignore the API key value, so an unset key is fine;
+        # they do need a base_url to reach.
+        if llm_config.provider in LOCAL_PROVIDERS:
             if not llm_config.base_url:
-                return False, "vLLM provider requires base_url."
+                return False, f"Provider '{llm_config.provider}' requires base_url."
         elif not llm_config.api_key:
             return (
                 False,
                 "LLM API key is not configured. Run 'he config llm --api-key YOUR_KEY'",
             )
 
-        if embedder_config.provider == "vllm":
+        if embedder_config.provider in LOCAL_PROVIDERS:
             if not embedder_config.base_url:
-                return False, "vLLM embedder requires base_url."
+                return (
+                    False,
+                    f"Provider '{embedder_config.provider}' embedder requires base_url.",
+                )
         elif not embedder_config.api_key:
             return (
                 False,
